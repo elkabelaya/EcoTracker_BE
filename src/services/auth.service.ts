@@ -14,8 +14,8 @@ export class AuthService {
   generateAccessToken(userId: string, email: string): string {
     return jwt.sign(
       { userId, email },
-      config.jwt.accessSecret,
-      { expiresIn: config.jwt.accessExpiresIn }
+      config.jwt.accessSecret as string,
+      { expiresIn: config.jwt.accessExpiresIn } as any
     );
   }
 
@@ -32,8 +32,8 @@ export class AuthService {
 
         const token = jwt.sign(
           { userId },
-          config.jwt.refreshSecret,
-          { expiresIn: config.jwt.refreshExpiresIn }
+          config.jwt.refreshSecret as string,
+          { expiresIn: config.jwt.refreshExpiresIn } as any
         );
 
         const expiresAt = new Date();

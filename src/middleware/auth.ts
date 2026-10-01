@@ -3,14 +3,14 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config';
 
 export interface AuthRequest extends Request {
-  user?: {
+  user: {
     id: string;
     email: string;
   };
 }
 
 export const authenticate = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -27,7 +27,7 @@ export const authenticate = (
       email: string;
     };
 
-    req.user = {
+    (req as AuthRequest).user = {
       id: decoded.userId,
       email: decoded.email,
     };

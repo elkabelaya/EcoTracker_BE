@@ -109,7 +109,7 @@ export class AuthController {
     }
   }
 
-  async logout(req: AuthRequest, res: Response) {
+  async logout(req: Request, res: Response) {
     try {
       const authHeader = req.headers.authorization;
       
@@ -129,14 +129,14 @@ export class AuthController {
     }
   }
 
-  async getProfile(req: AuthRequest, res: Response) {
+  async getProfile(req: Request, res: Response) {
     try {
-      if (!req.user) {
+      if (!(req as AuthRequest).user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const user = await prisma.user.findUnique({
-        where: { id: req.user.id },
+        where: { id: (req as AuthRequest).user.id },
         select: { id: true, email: true, createdAt: true },
       });
 
