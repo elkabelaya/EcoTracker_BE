@@ -1,3 +1,4 @@
+// Локальная схема для разработки с SQLite
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,20 +13,19 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   
-  habits      Habit[]
-  refreshTokens RefreshToken[]
+  habits       Habit[]
+  refreshToken RefreshToken[]
 
-  @@map("users")
+  @@map("user_table")
 }
 
 model Habit {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid())
   title       String
   category    Int      // 0=TRANSPORT, 1=WASTE, 2=WATER, 3=PLASTIC
   isCompleted Boolean  @default(false)
-  createdAt   DateTime
+  createdAt   DateTime @default(now())
   updatedAt   DateTime
   syncVersion Int      @default(1)
   isDeleted   Boolean  @default(false)

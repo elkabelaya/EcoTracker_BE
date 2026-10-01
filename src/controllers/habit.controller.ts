@@ -1,16 +1,12 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { habitService } from '../services/habit.service';
 import { AuthRequest } from '../middleware/auth';
 import { HabitCreateRequest, HabitUpdateRequest, SyncRequest, SyncResponse } from '../types';
 
 export class HabitController {
-  async getAllHabits(req: AuthRequest, res: Response) {
+  async getAllHabits(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const habits = await habitService.getAllHabits(req.user.id);
+      const habits = await habitService.getAllHabits((req as AuthRequest).user.id);
       res.json(habits);
     } catch (error) {
       console.error('Get all habits error:', error);
@@ -18,19 +14,15 @@ export class HabitController {
     }
   }
 
-  async getHabitsByCategory(req: AuthRequest, res: Response) {
+  async getHabitsByCategory(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
       const category = parseInt(req.query.category as string);
       
       if (isNaN(category) || category < 0 || category > 3) {
         return res.status(400).json({ error: 'Invalid category (must be 0-3)' });
       }
 
-      const habits = await habitService.getHabitsByCategory(req.user.id, category);
+      const habits = await habitService.getHabitsByCategory((req as AuthRequest).user.id, category);
       res.json(habits);
     } catch (error) {
       console.error('Get habits by category error:', error);
@@ -38,19 +30,15 @@ export class HabitController {
     }
   }
 
-  async getHabitById(req: AuthRequest, res: Response) {
+  async getHabitById(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
       const habitId = parseInt(req.params.id);
       
       if (isNaN(habitId)) {
         return res.status(400).json({ error: 'Invalid habit ID' });
       }
 
-      const habit = await habitService.getHabitById(req.user.id, habitId);
+      const habit = await habitService.getHabitById((req as AuthRequest).user.id, habitId);
       
       if (!habit) {
         return res.status(404).json({ error: 'Habit not found' });
@@ -63,12 +51,8 @@ export class HabitController {
     }
   }
 
-  async createHabit(req: AuthRequest<{}, {}, HabitCreateRequest>, res: Response) {
+  async createHabit(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
       const { title, category, createdAt } = req.body;
 
       if (!title || category === undefined) {
@@ -79,7 +63,7 @@ export class HabitController {
         return res.status(400).json({ error: 'Invalid category (must be 0-3)' });
       }
 
-      const habit = await habitService.createHabit(req.user.id, {
+      const habit = await habitService.createHabit((req as AuthRequest).user.id, {
         title,
         category,
         createdAt: createdAt || new Date(),
@@ -89,7 +73,7 @@ export class HabitController {
     } catch (error) {
       console.error('Create habit error:', error);
       
-      if (error.code === 'P2002') {
+      if ((error as { code?: string }).code === 'P2002') {
         return res.status(409).json({ error: 'Habit with this title and category already exists' });
       }
       
@@ -97,12 +81,8 @@ export class HabitController {
     }
   }
 
-  async updateHabit(req: AuthRequest<{}, {}, HabitUpdateRequest>, res: Response) {
+  async updateHabit(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
       const habitId = parseInt(req.params.id);
       
       if (isNaN(habitId)) {
@@ -115,7 +95,7 @@ export class HabitController {
         return res.status(400).json({ error: 'UpdatedAt is required' });
       }
 
-      const habit = await habitService.updateHabit(req.user.id, habitId, {
+      const habit = await habitService.updateHabit((req as AuthRequest).user.id, habitId, {
         title,
         category,
         isCompleted,
@@ -133,19 +113,15 @@ export class HabitController {
     }
   }
 
-  async deleteHabit(req: AuthRequest, res: Response) {
+  async deleteHabit(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
       const habitId = parseInt(req.params.id);
       
       if (isNaN(habitId)) {
         return res.status(400).json({ error: 'Invalid habit ID' });
       }
 
-      const success = await habitService.deleteHabit(req.user.id, habitId);
+      const success = await habitService.deleteHabit((req as AuthRequest).user.id, habitId);
       
       if (!success) {
         return res.status(404).json({ error: 'Habit not found' });
@@ -158,12 +134,8 @@ export class HabitController {
     }
   }
 
-  async sync(req: AuthRequest<{}, {}, SyncRequest>, res: Response) {
+  async sync(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
       const { lastSyncAt, changes } = req.body;
       const response: SyncResponse = {
         habits: [],
@@ -171,13 +143,13 @@ export class HabitController {
       };
 
       if (lastSyncAt) {
-        response.habits = await habitService.getHabitsSince(req.user.id, new Date(lastSyncAt));
+        response.habits = await habitService.getHabitsSince((req as AuthRequest).user.id, new Date(lastSyncAt));
       } else {
-        response.habits = await habitService.getAllHabits(req.user.id);
+        response.habits = await habitService.getAllHabits((req as AuthRequest).user.id);
       }
 
       if (changes && changes.length > 0) {
-        const synced = await habitService.syncHabits(req.user.id, changes);
+        const synced = await habitService.syncHabits((req as AuthRequest).user.id, changes);
         response.habits = [...response.habits, ...synced];
       }
 

@@ -1,21 +1,20 @@
-# EcoTracker Backend
+# EcoTracker Backend 
 
-REST API для синхронизации базы данных привычек с PostgreSQL и JWT аутентификацией.
+REST API для синхронизации базы данных привычек с JWT аутентификацией.
 
 ## Технологии
 
 - **Node.js** + TypeScript
-- **PostgreSQL** - база данных
+- **SQLite** (локально) / **PostgreSQL** (продакшн)
 - **Prisma ORM** - работа с БД
 - **JWT** (Access/Refresh tokens) - аутентификация
 - **Express.js** - веб фреймворк
 
-## Локальный запуск
+## Локальный запуск (SQLite)
 
 ### 1. Требования
 
 - Node.js >= 18
-- PostgreSQL >= 14
 - npm или yarn
 
 ### 2. Установка зависимостей
@@ -24,51 +23,28 @@ REST API для синхронизации базы данных привыче�
 npm install
 ```
 
-### 3. Настройка PostgreSQL
+### 3. Настройка переменных окружения
 
-Создайте базу данных:
-
-```bash
-createdb ecotracker
-# или через psql:
-# CREATE DATABASE ecotracker;
-```
-
-### 4. Настройка переменных окружения
-
-Скопируйте пример конфигурации:
+Создайте файл `.env.local`:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Отредактируйте `.env` с вашими настройками PostgreSQL:
+Файл уже настроен для SQLite - база данных создастся автоматически.
 
-```
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/ecotracker?schema=public"
-```
-
-### 5. Инициализация базы данных
+### 4. Инициализация базы данных
 
 ```bash
-npm run prisma:push
-# или для миграций:
-npm run prisma:migrate
+npm run prisma:push:local
 ```
 
-### 6. Запуск сервера
+### 5. Запуск сервера
 
 Разработка (с авто-перезагрузкой):
 
 ```bash
-npm run dev
-```
-
-Продакшн:
-
-```bash
-npm run build
-npm start
+npm run dev:local
 ```
 
 Сервер запустится на `http://localhost:3000`
@@ -138,6 +114,126 @@ curl -X POST http://localhost:3000/api/sync \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{"lastSyncAt": "2024-01-01T10:00:00Z", "changes": [...]}'
 ```
+
+## Деплой на Vercel
+
+### Вариант 1: Vercel Postgres (самый простой)
+
+**Vercel Postgres** - встроенная база данных, создаётся в 1 клик из панели Vercel. Работает на базе Neon под капотом.
+
+#### 1. Создайте проект в Vercel
+
+1. Зайдите на https://vercel.com/dashboard
+2. Нажмите **"Add New Project"**
+3. Импортируйте GitHub репозиторий `EcoTracker/EcoTracker_BE`
+4. В настройках проекта:
+   - **Framework Preset**: `Other`
+   - **Build Command**: `npm install && npx prisma generate --schema=./prisma/schema-vercel.prisma`
+   - **Output Directory**: `.vercel/output`
+
+#### 2. Создайте базу данных прямо в Vercel
+
+1. В панели проекта перейдите: **Settings → Databases** (или **Storage**)
+2. Нажмите **"New Database"** или **"Create Database"**
+3. Выберите **Vercel Postgres**
+4. Нажмите **"Add"**
+
+Vercel автоматически создаст базу и добавит переменную окружения `DATABASE_URL` с правильным connection string.
+
+#### 3. Настройте остальные переменные окружения
+
+В панели Vercel перейдите: **Settings → Environment Variables**
+
+Добавьте следующие переменные (для Production и Preview):
+
+| Переменная | Значение |
+|------------|----------|
+| `DATABASE_URL` | **Автоматически создана** при создании базы |
+| `JWT_ACCESS_SECRET` | Случайная строка мин. 32 символа (см. ниже) |
+| `JWT_REFRESH_SECRET` | Другая случайная строка мин. 32 символа |
+| `NODE_ENV` | `production` |
+
+**Генерация секретов:**
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+#### 4. Настройте автоматические миграции
+
+В панели Vercel перейдите: **Settings → Git → Deployment Protection**
+
+Добавьте **Pre-Deployment Step**:
+
+```bash
+npx prisma db push --schema=./prisma/schema-vercel.prisma --accept-data-loss
+```
+
+#### 5. Деплой
+
+**Автоматический:** просто сделайте push в GitHub:
+
+```bash
+git add .
+git commit -m "Ready for Vercel deploy"
+git push origin main
+```
+
+**Ручной:**
+
+```bash
+vercel deploy --prod
+```
+
+### Вариант 2: Vercel + внешний Neon (если нужен отдельный доступ)
+
+### 1. Создайте аккаунт Neon
+
+1. Зарегистрируйтесь на https://neon.tech
+2. Создайте новый проект:
+   - Нажмите **"New Project"**
+   - Имя проекта: `ecotracker`
+3. Скопируйте **Connection String**:
+   ```
+   postgresql://neondb:password@ep-xxx.region.aws.neon.tech/ecotracker?sslmode=require
+   ```
+
+### 2. Подключите проект к Vercel
+
+1. Зайдите на https://vercel.com/dashboard
+2. Нажмите **"Add New Project"**
+3. Импортируйте GitHub репозиторий `EcoTracker/EcoTracker_BE`
+4. В настройках проекта:
+   - **Framework Preset**: `Other`
+   - **Build Command**: `npm install && npx prisma generate --schema=./prisma/schema-vercel.prisma`
+   - **Output Directory**: `.vercel/output`
+
+### 3. Настройте переменные окружения
+
+В панели Vercel: **Settings → Environment Variables**
+
+| Переменная | Значение |
+|------------|----------|
+| `DATABASE_URL` | Ваш Neon connection string из шага 1 |
+| `JWT_ACCESS_SECRET` | Случайная строка мин. 32 символа |
+| `JWT_REFRESH_SECRET` | Другая случайная строка мин. 32 символа |
+| `NODE_ENV` | `production` |
+
+### 4. Настройте миграции и деплой
+
+См. шаги 4-5 в **Вариант 1** выше.
+
+### Ограничения бесплатного тарифа Neon
+
+- 0.5 GB хранилища
+- Автоматическое выключение после 7 дней без активности
+
+### Другие альтернативы
+
+| Провайдер | Бесплатно | Особенности |
+|-----------|-----------|-------------|
+| **Supabase** | ✅ 500 MB | Полная PostgreSQL + Auth |
+| **Railway** | ✅ $5 кредит/мес | Простое подключение |
 
 ## Развертывание на сервере
 
