@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@db:5432/ecotracker?schema=public
+      - JWT_ACCESS_SECRET=ecotracker-access-secret-key-2024
+      - JWT_REFRESH_SECRET=ecotracker-refresh-secret-key-2024
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=ecotracker
+
+volumes:
+  postgres_data:
