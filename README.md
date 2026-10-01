@@ -237,6 +237,94 @@ git push heroku main
 3. Укажите build command: `npm install && npm run build`
 4. Укажите start command: `npm start`
 
+### Vercel
+
+**Важно:** Vercel оптимизирован для serverless функций. Для Express.js приложения требуется специальная настройка.
+
+#### 1. Создайте `vercel.json`
+
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ]
+}
+```
+
+#### 2. Настройте проект в Vercel
+
+1. Установите Vercel CLI или используйте веб-интерфейс
+2. Подключите GitHub репозиторий
+3. В настройках проекта укажите:
+   - **Framework Preset**: Other
+   - **Build Command**: `npm install && npx prisma generate`
+   - **Output Directory**: `.vercel/output`
+
+#### 3. Настройте переменные окружения
+
+В панели Vercel (Settings → Environment Variables) добавьте:
+
+```
+DATABASE_URL=postgresql://user:password@host:5432/ecotracker?schema=public
+JWT_ACCESS_SECRET=your-production-access-secret
+JWT_REFRESH_SECRET=your-production-refresh-secret
+NODE_ENV=production
+```
+
+#### 4. Подключите PostgreSQL
+
+Используйте один из вариантов:
+
+**Vercel Postgres (рекомендуется):**
+```bash
+vercel postgres create
+# Скопируйте DATABASE_URL из ответа
+```
+
+**Neon (бесплатно):**
+1. Создайте проект на https://neon.tech
+2. Получите connection string
+3. Добавьте как DATABASE_URL в Vercel
+
+**Supabase (бесплатно):**
+1. Создайте проект на https://supabase.com
+2. Получите connection string из Project Settings → Database
+3. Добавьте как DATABASE_URL в Vercel
+
+#### 5. Деплой
+
+Через CLI:
+```bash
+vercel deploy --prod
+```
+
+Или через GitHub - автоматический деплой при пуше в main ветку.
+
+#### 6. Примените миграции
+
+После первого деплоя выполните:
+```bash
+vercel run npx prisma db push
+# или через Vercel CLI в production:
+vercel exec your-app-name "npx prisma db push"
+```
+
+#### Ограничения Vercel
+
+- Serverless функции имеют лимит времени выполнения (4s на free, 60s на Pro)
+- Долгие операции синхронизации могут прерываться
+- Для production с активными пользователями рассмотрите Railway/Render/Docker
+
 ## Безопасность
 
 ⚠️ **Важно для продакшена:**
