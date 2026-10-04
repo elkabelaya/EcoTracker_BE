@@ -12,5 +12,6 @@
       "dest": "src/index.ts"
     }
   ],
-  "buildCommand": "npm install --allow-scripts=@prisma/client,@prisma/engines,prisma && npx prisma generate --schema=./prisma/schema-vercel.prisma"
+  "outputDirectory": ".vercel/output",
+  "installCommand": "npm install --allow-scripts=@prisma/client,@prisma/engines,prisma && npx prisma generate --schema=./prisma/schema-vercel.prisma"
 }
