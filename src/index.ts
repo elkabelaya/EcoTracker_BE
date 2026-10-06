@@ -30,16 +30,19 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server with auto-migration
-app.listen(config.port, async () => {
-  console.log(`🚀 EcoTracker Backend running on port ${config.port}`);
-  console.log(`📝 Environment: ${config.nodeEnv}`);
-  console.log(`🔗 API: http://localhost:${config.port}/api`);
-  
-  try {
-    await prisma.$connect();
-    console.log('✅ Database connected');
-  } catch (error) {
-    console.error('❌ Database connection failed:', error);
-  }
-});
+if (process.env.NODE_ENV !== 'production') {
+  // Start server with auto-migration
+  app.listen(config.port, async () => {
+    console.log(`🚀 EcoTracker Backend running on port ${config.port}`);
+    console.log(`📝 Environment: ${config.nodeEnv}`);
+    console.log(`🔗 API: http://localhost:${config.port}/api`);
+    
+    try {
+      await prisma.$connect();
+      console.log('✅ Database connected');
+    } catch (error) {
+      console.error('❌ Database connection failed:', error);
+    }
+  });
+}
+export default app;
