@@ -23,23 +23,9 @@ REST API для синхронизации базы данных привыче�
 npm install
 ```
 
-### 3. Настройка переменных окружения
+База данных и сервер будут настроены автоматически.
 
-Создайте файл `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-Файл уже настроен для SQLite - база данных создастся автоматически.
-
-### 4. Инициализация базы данных
-
-```bash
-npm run prisma:push:local
-```
-
-### 5. Запуск сервера
+### 3. Запуск сервера
 
 Разработка (с авто-перезагрузкой):
 
@@ -47,7 +33,7 @@ npm run prisma:push:local
 npm run dev:local
 ```
 
-Сервер запустится на `http://localhost:3000`
+Сервер запустится на `http://localhost:3000` с SQLite базой данных (`dev.db`).
 
 ## API Endpoints
 
@@ -128,7 +114,7 @@ curl -X POST http://localhost:3000/api/sync \
 3. Импортируйте GitHub репозиторий `EcoTracker/EcoTracker_BE`
 4. В настройках проекта:
    - **Framework Preset**: `Other`
-   - **Build Command**: `npm install && npx prisma generate --schema=./prisma/schema-vercel.prisma`
+   - **Build Command**: `npm install`
    - **Output Directory**: `.vercel/output`
 
 #### 2. Создайте базу данных прямо в Vercel
@@ -166,7 +152,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Добавьте **Pre-Deployment Step**:
 
 ```bash
-npx prisma db push --schema=./prisma/schema-vercel.prisma --accept-data-loss
+npx prisma db push --accept-data-loss
 ```
 
 #### 5. Деплой
@@ -205,7 +191,7 @@ vercel deploy --prod
 3. Импортируйте GitHub репозиторий `EcoTracker/EcoTracker_BE`
 4. В настройках проекта:
    - **Framework Preset**: `Other`
-   - **Build Command**: `npm install && npx prisma generate --schema=./prisma/schema-vercel.prisma`
+   - **Build Command**: `npm install`
    - **Output Directory**: `.vercel/output`
 
 ### 3. Настройте переменные окружения
@@ -337,33 +323,13 @@ git push heroku main
 
 **Важно:** Vercel оптимизирован для serverless функций. Для Express.js приложения требуется специальная настройка.
 
-#### 1. Создайте `vercel.json`
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "src/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/index.ts"
-    }
-  ]
-}
-```
-
-#### 2. Настройте проект в Vercel
+#### 1. Настройте проект в Vercel
 
 1. Установите Vercel CLI или используйте веб-интерфейс
 2. Подключите GitHub репозиторий
 3. В настройках проекта укажите:
    - **Framework Preset**: Other
-   - **Build Command**: `npm install && npx prisma generate`
+   - **Build Command**: `npm install`
    - **Output Directory**: `.vercel/output`
 
 #### 3. Настройте переменные окружения
@@ -408,10 +374,9 @@ vercel deploy --prod
 
 #### 6. Примените миграции
 
-После первого деплоя выполните:
+Миграции применяются автоматически через Pre-Deployment Step (см. шаг 4). При необходимости вручную:
+
 ```bash
-vercel run npx prisma db push
-# или через Vercel CLI в production:
 vercel exec your-app-name "npx prisma db push"
 ```
 
