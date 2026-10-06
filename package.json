@@ -7,11 +7,9 @@
     "dev:local": "DATABASE_URL=file:./dev.db ts-node-dev --respawn src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "prisma:generate:local": "prisma generate --schema=./prisma/schema-local.prisma",
-    "prisma:generate:vercel": "prisma generate --schema=./prisma/schema-vercel.prisma",
-    "prisma:push:local": "prisma db push --schema=./prisma/schema-local.prisma",
-    "prisma:push:vercel": "prisma db push --schema=./prisma/schema-vercel.prisma",
-    "postinstall": "prisma generate --schema=./prisma/schema-vercel.prisma"
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema=./prisma/schema.prisma",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.9.0",
