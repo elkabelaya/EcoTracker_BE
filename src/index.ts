@@ -8,7 +8,11 @@ const app = express();
 const prisma = new PrismaClient();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Health check endpoint
@@ -30,6 +34,12 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ error: 'Internal server error' });
 });
 
+//Test route
+app.post('/api/test-post', (req, res) => {
+  console.log('--- ТЕСТОВЫЙ POST ЗАПРОС ДОШЕЛ ДО EXPRESS! ---', req.body);
+  res.status(200).json({ success: true, received: req.body });
+});
+
 // Start server with auto-migration
 app.listen(config.port, async () => {
   console.log(`🚀 EcoTracker Backend running on port ${config.port}`);
@@ -43,3 +53,5 @@ app.listen(config.port, async () => {
     console.error('❌ Database connection failed:', error);
   }
 });
+
+export default app;
