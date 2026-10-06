@@ -28,7 +28,7 @@ export class HabitService {
     return this.mapToHabit(habits);
   }
 
-  async getHabitById(userId: string, habitId: string): Promise<Habit | null> {
+  async getHabitById(userId: string, habitId: number): Promise<Habit | null> {
     const habit = await this.prisma.habit.findFirst({
       where: { id: habitId, userId, isDeleted: false },
     });
