@@ -1,18 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "src/index.ts",
-      "use": "@vercel/node"
+  "functions": {
+    "src/index.ts": {
+      "runtime": "@vercel/node"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
       "dest": "src/index.ts"
     }
-  ],
-  "outputDirectory": ".vercel/output",
-  "installCommand": "npm install --allow-scripts=@prisma/client,@prisma/engines,prisma",
-  "buildCommand": "npx prisma generate --schema=./prisma/schema-vercel.prisma"
+  ]
 }
