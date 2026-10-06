@@ -7,9 +7,7 @@
     "dev:local": "DATABASE_URL=file:./dev.db ts-node-dev --respawn src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
-    "prisma:push": "prisma db push --schema=./prisma/schema.prisma",
-    "postinstall": "prisma generate && prisma push"
+    "postinstall": "prisma generate && prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^5.9.0",
