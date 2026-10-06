@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:push": "prisma db push --schema=./prisma/schema.prisma",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate && prisma push"
   },
   "dependencies": {
     "@prisma/client": "^5.9.0",
