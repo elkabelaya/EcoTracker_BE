@@ -5,12 +5,13 @@
   "main": "dist/index.js",
   "scripts": {
     "dev:local": "DATABASE_URL=file:./dev.db ts-node-dev --respawn src/index.ts",
-    "build": "npx prisma generate --schema=./prisma/schema-vercel.prisma && tsc",
+    "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate:local": "prisma generate --schema=./prisma/schema-local.prisma",
     "prisma:generate:vercel": "prisma generate --schema=./prisma/schema-vercel.prisma",
     "prisma:push:local": "prisma db push --schema=./prisma/schema-local.prisma",
-    "prisma:push:vercel": "prisma db push --schema=./prisma/schema-vercel.prisma"
+    "prisma:push:vercel": "prisma db push --schema=./prisma/schema-vercel.prisma",
+    "postinstall": "prisma generate --schema=./prisma/schema-vercel.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.9.0",
